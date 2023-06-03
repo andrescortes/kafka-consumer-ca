@@ -1,33 +1,33 @@
-buildscript {
-	ext {
-		cleanArchitectureVersion = '3.0.0'
-        springBootVersion = '2.7.9'
-		sonarVersion = '3.5.0.2730'
-		jacocoVersion = '0.8.8'
-        lombokVersion = '1.18.26'
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.12'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'co.com.dev'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
 	}
 }
 
-plugins {
-	id 'co.com.bancolombia.cleanArchitecture' version "${cleanArchitectureVersion}"
-	id 'org.springframework.boot' version "${springBootVersion}"
-	id 'org.sonarqube' version "${sonarVersion}"
-	id 'jacoco'
+repositories {
+	mavenCentral()
 }
 
-sonarqube {
-    def modules = subprojects.projectDir.collect { "${it.toString().replace(project.projectDir.toString() + "/", "")}" }
-    properties {
-        property "sonar.sourceEnconding", "UTF-8"
-        property "sonar.modules", "${modules.join(',')}"
-        property "sonar.sources", "src,deployment,settings.gradle,main.gradle,build.gradle,${modules.collect { "${it}/build.gradle" }.join(',')}"
-        property "sonar.exclusions","**/MainApplication.java"
-        property "sonar.test", "src/test"
-        property "sonar.java.binaries", ""
-        property "sonar.junit.reportsPath", ""
-        property "sonar.java.coveragePlugin", "jacoco"
-        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
-    }
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.kafka:spring-kafka'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
 }
 
-apply from: './main.gradle'
+tasks.named('test') {
+	useJUnitPlatform()
+}
