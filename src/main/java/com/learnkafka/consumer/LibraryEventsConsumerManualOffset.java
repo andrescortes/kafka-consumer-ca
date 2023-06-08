@@ -1,4 +1,4 @@
-package co.com.dev.consumer;
+package com.learnkafka.consumer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -9,19 +9,13 @@ import org.springframework.stereotype.Component;
 
 //@Component
 @Slf4j
-public class LibraryEventsConsumerManualOffset implements AcknowledgingMessageListener<Integer, String> {
+public class LibraryEventsConsumerManualOffset implements AcknowledgingMessageListener<Integer,String> {
 
-    /**
-     * Invoked with data from kafka.
-     *
-     * @param consumerRecord           the data to be processed.
-     * @param acknowledgment the acknowledgment.
-     */
+
     @Override
     @KafkaListener(topics = {"library-events"})
     public void onMessage(ConsumerRecord<Integer, String> consumerRecord, Acknowledgment acknowledgment) {
-        log.info("Received data: {}", consumerRecord);
-        log.info("Acknowledgment is: {}", acknowledgment);
+        log.info("ConsumerRecord : {} ", consumerRecord );
         acknowledgment.acknowledge();
     }
 }

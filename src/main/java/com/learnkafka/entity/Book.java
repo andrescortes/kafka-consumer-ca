@@ -1,20 +1,22 @@
-package co.com.dev.entity;
+package com.learnkafka.entity;
 
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
-@Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@NoArgsConstructor
+@Data
+@Builder
 @Entity
 public class Book {
-
     @Id
     private Integer bookId;
     private String bookName;

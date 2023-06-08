@@ -1,14 +1,14 @@
-package co.com.dev.entity;
+package com.learnkafka.entity;
+
 
 import lombok.*;
 
 import javax.persistence.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@NoArgsConstructor
+@Data
+@Builder
 @Entity
 public class LibraryEvent {
 
@@ -17,7 +17,8 @@ public class LibraryEvent {
     private Integer libraryEventId;
     @Enumerated(EnumType.STRING)
     private LibraryEventType libraryEventType;
-    @OneToOne(mappedBy = "libraryEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "libraryEvent", cascade = {CascadeType.ALL})
     @ToString.Exclude
     private Book book;
+
 }
