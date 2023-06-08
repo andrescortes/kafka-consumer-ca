@@ -10,17 +10,18 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FailureService {
 
-    private FailureRecordRepository failureRecordRepository;
+    private final FailureRecordRepository failureRecordRepository;
 
     public FailureService(FailureRecordRepository failureRecordRepository) {
         this.failureRecordRepository = failureRecordRepository;
     }
 
-    public void saveFailedRecord(ConsumerRecord<Integer, String> consumerRecord, Exception e, String status) {
+    public void saveFailedRecord(ConsumerRecord<Integer, String> consumerRecord, Exception e,
+        String status) {
 
         var failureRecord = new FailureRecord(null, consumerRecord.topic(),
-                consumerRecord.key(), consumerRecord.value(), consumerRecord.partition()
-        ,consumerRecord.offset(), e.getCause().getMessage(), status);
+            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition()
+            , consumerRecord.offset(), e.getCause().getMessage(), status);
 
         failureRecordRepository.save(failureRecord);
 
