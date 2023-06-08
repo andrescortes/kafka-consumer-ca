@@ -35,12 +35,14 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka(topics = {"library-events", "library-events.RETRY", "library-events.DLT"}, partitions = 3)
 @TestPropertySource(properties = {
         "spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}",
+        "retryLister.startup=false",
 })
 class LibraryEventsConsumerIntegrationTest {
 
@@ -75,9 +77,15 @@ class LibraryEventsConsumerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        for (MessageListenerContainer messageListenerContainer : kafkaListenerEndpointRegistry.getListenerContainers()) {
-            ContainerTestUtils.waitForAssignment(messageListenerContainer, embeddedKafkaBroker.getPartitionsPerTopic());
-        }
+        MessageListenerContainer listenerContainer = kafkaListenerEndpointRegistry.getListenerContainers()
+                .stream().filter(messageListenerContainer -> messageListenerContainer.getGroupId().equals("library-events-listener-group"))
+                .collect(Collectors.toList())
+                .get(0);
+        ContainerTestUtils.waitForAssignment(listenerContainer, embeddedKafkaBroker.getPartitionsPerTopic());
+
+//        for (MessageListenerContainer messageListenerContainer : kafkaListenerEndpointRegistry.getListenerContainers()) {
+//            ContainerTestUtils.waitForAssignment(messageListenerContainer, embeddedKafkaBroker.getPartitionsPerTopic());
+//        }
     }
 
     @AfterEach
@@ -141,6 +149,13 @@ class LibraryEventsConsumerIntegrationTest {
 
         Mockito.verify(libraryEventsConsumerSpy, Mockito.times(3)).onMessage(Mockito.isA(ConsumerRecord.class));
         Mockito.verify(libraryEventsServiceSpy, Mockito.times(3)).processLibraryEvent(Mockito.isA(ConsumerRecord.class));
+
+        Map<String, Object> configs = new HashMap<>(KafkaTestUtils.consumerProps("group2", "true", embeddedKafkaBroker));
+        consumer = new DefaultKafkaConsumerFactory<>(configs, new IntegerDeserializer(), new StringDeserializer()).createConsumer();
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, deadLetterTopic);
+
+        ConsumerRecord<Integer, String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer, deadLetterTopic);
+        Assertions.assertThat(consumerRecord.value()).isEqualTo(json);
     }
 
     @Test

@@ -8,16 +8,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
-public class LibraryEventsConsumer {
+@Component
+public class LibraryEventsRetryConsumer {
 
     @Autowired
     private LibraryEventsService libraryEventsService;
 
-    @KafkaListener(topics = {"library-events"}, groupId = "library-events-listener-group")
+    @KafkaListener(topics = {"${topics.retry}"},
+            autoStartup = "${retry.startup:false}",
+            groupId = "retry-listener-group")
     public void onMessage(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
-        log.info("Received message: {}", consumerRecord);
+        log.info("Consumer record in Retry Consumer: {}", consumerRecord);
+        consumerRecord.headers().forEach(header -> log.info("key: {}, value: {}", header.key(), header.value()));
         libraryEventsService.processLibraryEvent(consumerRecord);
     }
 }
